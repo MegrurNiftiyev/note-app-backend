@@ -54,6 +54,7 @@ const swaggerDefinition = {
         properties: {
           name: {
             type: 'string',
+            minLength: 2,
             example: 'Ada Lovelace',
           },
           email: {
@@ -64,6 +65,7 @@ const swaggerDefinition = {
           password: {
             type: 'string',
             format: 'password',
+            minLength: 8,
             example: 'secure-password',
           },
         },

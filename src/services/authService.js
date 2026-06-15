@@ -31,6 +31,14 @@ const normalizeEmail = (email) => {
 };
 
 const register = async ({ name, email, password }) => {
+  if (
+    typeof name !== 'string' ||
+    typeof email !== 'string' ||
+    typeof password !== 'string'
+  ) {
+    throw new BadRequestError('Name, email, and password must be strings');
+  }
+
   const normalizedEmail = normalizeEmail(email);
   const existingUser = await User.findOne({ email: normalizedEmail });
 
@@ -43,8 +51,8 @@ const register = async ({ name, email, password }) => {
 };
 
 const login = async ({ email, password }) => {
-  if (!email || !password) {
-    throw new BadRequestError('Email and password are required');
+  if (typeof email !== 'string' || typeof password !== 'string') {
+    throw new BadRequestError('Email and password must be strings');
   }
 
   const user = await User.findOne({ email: normalizeEmail(email) }).select('+password');

@@ -1,4 +1,5 @@
 const express = require('express');
+const helmet = require('helmet');
 const swaggerUi = require('swagger-ui-express');
 
 const swaggerSpec = require('./config/swagger');
@@ -42,6 +43,7 @@ const swaggerOptions = {
   },
 };
 
+app.use(helmet());
 app.use(express.json());
 
 app.get('/health', (req, res) => {

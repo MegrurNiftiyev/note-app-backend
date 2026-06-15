@@ -1,8 +1,23 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 
 const authController = require('../controllers/authController');
+const {
+  validateLogin,
+  validateRegister,
+} = require('../middlewares/validateAuth');
 
 const router = express.Router();
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 'fail',
+    message: 'Too many attempts, try again later',
+  },
+});
 
 /**
  * @openapi
@@ -45,8 +60,14 @@ const router = express.Router();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
+ *       429:
+ *         description: Too many register attempts.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/register', authController.register);
+router.post('/register', authLimiter, validateRegister, authController.register);
 
 /**
  * @openapi
@@ -92,7 +113,13 @@ router.post('/register', authController.register);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
+ *       429:
+ *         description: Too many login attempts.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/login', authController.login);
+router.post('/login', authLimiter, validateLogin, authController.login);
 
 module.exports = router;

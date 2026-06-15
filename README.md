@@ -20,6 +20,9 @@ Technologies used in this project include Node.js, Express.js, and MongoDB.
   <a href="https://www.npmjs.com/package/jsonwebtoken"><img alt="jsonwebtoken" src="https://img.shields.io/badge/jsonwebtoken-v9.0.3-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white"></a>
   <a href="https://www.npmjs.com/package/bcrypt"><img alt="bcrypt" src="https://img.shields.io/badge/bcrypt-v6.0.0-338?style=for-the-badge&logo=npm&logoColor=white"></a>
   <a href="https://www.npmjs.com/package/dotenv"><img alt="dotenv" src="https://img.shields.io/badge/dotenv-v16.6.1-ECD53F?style=for-the-badge&logo=dotenv&logoColor=black"></a>
+  <a href="https://www.npmjs.com/package/helmet"><img alt="helmet" src="https://img.shields.io/badge/helmet-v8.2.0-000000?style=for-the-badge&logo=npm&logoColor=white"></a>
+  <a href="https://www.npmjs.com/package/express-rate-limit"><img alt="express-rate-limit" src="https://img.shields.io/badge/express--rate--limit-v8.5.2-000000?style=for-the-badge&logo=npm&logoColor=white"></a>
+  <a href="https://www.npmjs.com/package/zod"><img alt="zod" src="https://img.shields.io/badge/zod-v4.4.3-3068B7?style=for-the-badge&logo=npm&logoColor=white"></a>
   <a href="https://www.npmjs.com/package/swagger-jsdoc"><img alt="swagger-jsdoc" src="https://img.shields.io/badge/swagger--jsdoc-v6.3.0-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"></a>
   <a href="https://www.npmjs.com/package/swagger-ui-express"><img alt="swagger-ui-express" src="https://img.shields.io/badge/swagger--ui--express-v5.0.1-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"></a>
 </p>
@@ -44,6 +47,8 @@ https://note-app-backend-ktxk.onrender.com/api-docs
 |--------|----------|-------------|------|
 | POST | `/api/auth/register` | Register a new user | No |
 | POST | `/api/auth/login` | Login and receive JWT token | No |
+
+Auth requests are rate limited to 5 attempts per 15 minutes for each endpoint.
 
 ### Users
 
@@ -88,7 +93,8 @@ note-app-backend
 |   |   `-- customErrors.js
 |   |-- middlewares
 |   |   |-- authMiddleware.js
-|   |   `-- errorMiddleware.js
+|   |   |-- errorMiddleware.js
+|   |   `-- validateAuth.js
 |   |-- models
 |   |   |-- Note.js
 |   |   `-- User.js
@@ -142,6 +148,15 @@ cp .env.example .env
 npm run dev
 ```
 
+## Security
+
+- Helmet is enabled before JSON parsing to set safer HTTP response headers.
+- Auth endpoints use rate limiting: 5 register or login attempts per 15 minutes.
+- Zod validates register and login request bodies before they reach the service layer.
+- Auth services also enforce string-only `name`, `email`, and `password` values to reduce NoSQL injection risk.
+- Passwords are hashed with bcrypt before storage.
+- Protected routes require a Bearer JWT.
+
 ## Error Responses
 
 All errors return a consistent JSON format:
@@ -160,6 +175,7 @@ All errors return a consistent JSON format:
 | 403 | Forbidden, not your resource |
 | 404 | Not found |
 | 409 | Conflict, for example email already exists |
+| 429 | Too many attempts, try again later |
 | 500 | Internal server error |
 
 ### Error Classes
