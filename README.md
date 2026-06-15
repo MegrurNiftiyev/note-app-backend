@@ -1,8 +1,8 @@
-# 📝 Note-Taking API
+# Note-Taking API
 
-This API is built to test backend development concepts across different programming languages.  
-It uses **JWT Authentication** and a **layered Clean Architecture** with custom exception handling.  
-Technologies used in this project include **Node.js**, **Express.js**, and **MongoDB**.
+This API is built to test backend development concepts across different programming languages.
+It uses JWT Authentication and a layered Clean Architecture with custom exception handling.
+Technologies used in this project include Node.js, Express.js, and MongoDB.
 
 ## Tech Stack
 
@@ -15,19 +15,28 @@ Technologies used in this project include **Node.js**, **Express.js**, and **Mon
 ## Packages
 
 <p>
-  <a href="https://www.npmjs.com/package/express"><img alt="express" src="https://img.shields.io/badge/express-v4.18.2-000000?style=for-the-badge&logo=express&logoColor=white"></a>
-  <a href="https://www.npmjs.com/package/mongoose"><img alt="mongoose" src="https://img.shields.io/badge/mongoose-v8.0.0-880000?style=for-the-badge&logo=mongodb&logoColor=white"></a>
-  <a href="https://www.npmjs.com/package/jsonwebtoken"><img alt="jsonwebtoken" src="https://img.shields.io/badge/jsonwebtoken-v9.0.2-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white"></a>
-  <a href="https://www.npmjs.com/package/bcryptjs"><img alt="bcryptjs" src="https://img.shields.io/badge/bcryptjs-v2.4.3-338?style=for-the-badge&logo=npm&logoColor=white"></a>
-  <a href="https://www.npmjs.com/package/dotenv"><img alt="dotenv" src="https://img.shields.io/badge/dotenv-v16.3.1-ECD53F?style=for-the-badge&logo=dotenv&logoColor=black"></a>
-  <a href="https://www.npmjs.com/package/swagger-jsdoc"><img alt="swagger-jsdoc" src="https://img.shields.io/badge/swagger--jsdoc-v6.2.8-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"></a>
-  <a href="https://www.npmjs.com/package/swagger-ui-express"><img alt="swagger-ui-express" src="https://img.shields.io/badge/swagger--ui--express-v5.0.0-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"></a>
-  <a href="https://www.npmjs.com/package/nodemon"><img alt="nodemon" src="https://img.shields.io/badge/nodemon-v3.0.2-76D04B?style=for-the-badge&logo=nodemon&logoColor=white"></a>
+  <a href="https://www.npmjs.com/package/express"><img alt="express" src="https://img.shields.io/badge/express-v4.22.2-000000?style=for-the-badge&logo=express&logoColor=white"></a>
+  <a href="https://www.npmjs.com/package/mongoose"><img alt="mongoose" src="https://img.shields.io/badge/mongoose-v8.24.0-880000?style=for-the-badge&logo=mongodb&logoColor=white"></a>
+  <a href="https://www.npmjs.com/package/jsonwebtoken"><img alt="jsonwebtoken" src="https://img.shields.io/badge/jsonwebtoken-v9.0.3-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white"></a>
+  <a href="https://www.npmjs.com/package/bcrypt"><img alt="bcrypt" src="https://img.shields.io/badge/bcrypt-v6.0.0-338?style=for-the-badge&logo=npm&logoColor=white"></a>
+  <a href="https://www.npmjs.com/package/dotenv"><img alt="dotenv" src="https://img.shields.io/badge/dotenv-v16.6.1-ECD53F?style=for-the-badge&logo=dotenv&logoColor=black"></a>
+  <a href="https://www.npmjs.com/package/swagger-jsdoc"><img alt="swagger-jsdoc" src="https://img.shields.io/badge/swagger--jsdoc-v6.3.0-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"></a>
+  <a href="https://www.npmjs.com/package/swagger-ui-express"><img alt="swagger-ui-express" src="https://img.shields.io/badge/swagger--ui--express-v5.0.1-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"></a>
 </p>
 
-## API Documentation (Swagger)
+## API Documentation
 
-Interactive API docs are available at `http://localhost:5000/api-docs` after running the server.
+Local Swagger docs are available at:
+
+```text
+http://localhost:5000/api-docs
+```
+
+Deployed Swagger docs are available at:
+
+```text
+https://note-app-backend-ktxk.onrender.com/api-docs
+```
 
 <p align="center">
   <img src="./screenshots/01_swagger_overview.png" alt="Swagger Overview" width="100%" />
@@ -39,20 +48,31 @@ Interactive API docs are available at `http://localhost:5000/api-docs` after run
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| POST | `/api/auth/register` | Register a new user | ❌ |
-| POST | `/api/auth/login` | Login and receive JWT token | ❌ |
+| POST | `/api/auth/register` | Register a new user | No |
+| POST | `/api/auth/login` | Login and receive JWT token | No |
+
+### Users
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/users/me` | Get your profile | Yes |
+| PATCH | `/api/users/me` | Update your name or email | Yes |
+| DELETE | `/api/users/me` | Delete your account and all related notes | Yes |
 
 ### Notes
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| POST | `/api/notes` | Create a new note | ✅ |
-| GET | `/api/notes` | Get all your notes | ✅ |
-| DELETE | `/api/notes/:id` | Delete a specific note | ✅ |
-| DELETE | `/api/notes` | Delete all your notes | ✅ |
+| POST | `/api/notes` | Create a new note | Yes |
+| GET | `/api/notes` | Get all your notes | Yes |
+| GET | `/api/notes/:id` | Get one note by ID | Yes |
+| PATCH | `/api/notes/:id` | Update a note | Yes |
+| DELETE | `/api/notes/:id` | Delete a specific note | Yes |
+| DELETE | `/api/notes` | Delete all your notes | Yes |
 
-**Authorization header format:**
-```
+Authorization header format:
+
+```text
 Authorization: Bearer <your_token>
 ```
 
@@ -60,40 +80,35 @@ Authorization: Bearer <your_token>
 
 ```text
 note-app-backend
-│   server.js
-│
-└───src
-    ├───config
-    │       db.js
-    │       swagger.js
-    │
-    ├───errors
-    │       customErrors.js
-    │
-    ├───middlewares
-    │       authMiddleware.js
-    │       errorMiddleware.js
-    │
-    ├───models
-    │       User.js
-    │       Note.js
-    │
-    ├───services
-    │       authService.js
-    │       noteService.js
-    │
-    ├───controllers
-    │       authController.js
-    │       noteController.js
-    │
-    ├───routes
-    │       authRoutes.js
-    │       noteRoutes.js
-    │
-    ├───utils
-    │       catchAsync.js
-    │
-    └───app.js
+|-- server.js
+|-- src
+|   |-- app.js
+|   |-- config
+|   |   |-- db.js
+|   |   `-- swagger.js
+|   |-- controllers
+|   |   |-- authController.js
+|   |   |-- noteController.js
+|   |   `-- userController.js
+|   |-- errors
+|   |   `-- customErrors.js
+|   |-- middlewares
+|   |   |-- authMiddleware.js
+|   |   `-- errorMiddleware.js
+|   |-- models
+|   |   |-- Note.js
+|   |   `-- User.js
+|   |-- routes
+|   |   |-- authRoutes.js
+|   |   |-- noteRoutes.js
+|   |   `-- userRoutes.js
+|   |-- services
+|   |   |-- authService.js
+|   |   |-- noteService.js
+|   |   `-- userService.js
+|   `-- utils
+|       |-- catchAsync.js
+|       `-- getBaseUrl.js
 ```
 
 ## Environment Variables
@@ -102,23 +117,36 @@ Before running the app, create a `.env` file in the project root:
 
 ```env
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/noteapp
+MONGO_URI=mongodb://localhost:27017/note-app-db
 JWT_SECRET=your_jwt_secret_here
+API_BASE_URL=https://your-app-name.onrender.com
 ```
 
 ## Installation
 
-1. Clone the repository:  
-   `git clone https://github.com/MegrurNiftiyev/note-app-backend.git`
+1. Clone the repository:
 
-2. Install dependencies:  
-   `npm install`
+```bash
+git clone https://github.com/MegrurNiftiyev/note-app-backend.git
+```
 
-3. Set up environment variables:  
-   `cp .env.example .env`
+2. Install dependencies:
 
-4. Run the application:  
-   `npm run dev`
+```bash
+npm install
+```
+
+3. Set up environment variables:
+
+```bash
+cp .env.example .env
+```
+
+4. Run the application:
+
+```bash
+npm run dev
+```
 
 ## Error Responses
 
@@ -134,11 +162,25 @@ All errors return a consistent JSON format:
 | Status | Meaning |
 |--------|---------|
 | 400 | Bad request / validation error |
-| 401 | Unauthorized (missing or invalid token) |
-| 403 | Forbidden (not your resource) |
+| 401 | Unauthorized, missing or invalid token |
+| 403 | Forbidden, not your resource |
 | 404 | Not found |
-| 409 | Conflict (e.g. email already exists) |
+| 409 | Conflict, for example email already exists |
 | 500 | Internal server error |
+
+### Error Classes
+
+The API uses a custom operational error hierarchy:
+
+| Class | Status |
+|-------|--------|
+| `BadRequestError` | 400 |
+| `UnauthorizedError` | 401 |
+| `ForbiddenError` | 403 |
+| `NotFoundError` | 404 |
+| `ConflictError` | 409 |
+
+The global error middleware also handles Mongoose validation errors, duplicate key errors, and invalid ObjectId cast errors.
 
 ## License
 

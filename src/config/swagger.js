@@ -25,6 +25,20 @@ const swaggerDefinition = {
       description: 'Local development server',
     },
   ],
+  tags: [
+    {
+      name: 'Auth',
+      description: 'Authentication endpoints',
+    },
+    {
+      name: 'Users',
+      description: 'Authenticated user account endpoints',
+    },
+    {
+      name: 'Notes',
+      description: 'Authenticated note management endpoints',
+    },
+  ],
   components: {
     securitySchemes: {
       bearerAuth: {
@@ -67,6 +81,20 @@ const swaggerDefinition = {
             type: 'string',
             format: 'password',
             example: 'secure-password',
+          },
+        },
+      },
+      UserUpdateRequest: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            example: 'Ada Lovelace',
+          },
+          email: {
+            type: 'string',
+            format: 'email',
+            example: 'ada@example.com',
           },
         },
       },

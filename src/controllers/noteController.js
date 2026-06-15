@@ -23,6 +23,31 @@ const getNotes = catchAsync(async (req, res) => {
   });
 });
 
+const getNote = catchAsync(async (req, res) => {
+  const note = await noteService.getNoteById({
+    noteId: req.params.id,
+    userId: req.user._id,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: { note },
+  });
+});
+
+const updateNote = catchAsync(async (req, res) => {
+  const note = await noteService.updateNoteById({
+    noteId: req.params.id,
+    userId: req.user._id,
+    text: req.body.text,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: { note },
+  });
+});
+
 const deleteNote = catchAsync(async (req, res) => {
   await noteService.deleteNoteById({
     noteId: req.params.id,
@@ -44,6 +69,8 @@ const deleteAllNotes = catchAsync(async (req, res) => {
 module.exports = {
   createNote,
   getNotes,
+  getNote,
+  updateNote,
   deleteNote,
   deleteAllNotes,
 };
