@@ -1,5 +1,9 @@
 const swaggerJsdoc = require('swagger-jsdoc');
 
+const getBaseUrl = require('../utils/getBaseUrl');
+
+const baseUrl = getBaseUrl();
+
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
@@ -9,7 +13,15 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: 'http://localhost:5000',
+      url: '/',
+      description: 'Current server',
+    },
+    {
+      url: baseUrl,
+      description: 'Configured server',
+    },
+    {
+      url: `http://localhost:${process.env.PORT || 5000}`,
       description: 'Local development server',
     },
   ],
