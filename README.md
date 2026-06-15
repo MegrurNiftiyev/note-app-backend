@@ -4,12 +4,6 @@ This API is built to test backend development concepts across different programm
 It uses **JWT Authentication** and a **layered Clean Architecture** with custom exception handling.  
 Technologies used in this project include **Node.js**, **Express.js**, and **MongoDB**.
 
-> ⚠️ This is a **learning/test project**. Not intended for production use.
-
-## Links
-
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/MegrurNiftiyev/note-app-backend)
-
 ## Tech Stack
 
 <p>
@@ -37,11 +31,6 @@ Interactive API docs are available at `http://localhost:5000/api-docs` after run
 
 <p align="center">
   <img src="./screenshots/01_swagger_overview.png" alt="Swagger Overview" width="100%" />
-</p>
-
-<p align="center">
-  <img src="./screenshots/02_swagger_auth.png" alt="Swagger Auth Endpoints" width="49%" />
-  <img src="./screenshots/03_swagger_notes.png" alt="Swagger Notes Endpoints" width="49%" />
 </p>
 
 ## API Endpoints
