@@ -26,12 +26,6 @@ Technologies used in this project include Node.js, Express.js, and MongoDB.
 
 ## API Documentation
 
-Local Swagger docs are available at:
-
-```text
-http://localhost:5000/api-docs
-```
-
 Deployed Swagger docs are available at:
 
 ```text
@@ -184,4 +178,5 @@ The global error middleware also handles Mongoose validation errors, duplicate k
 
 ## License
 
-MIT
+This project is licensed under the MIT License.
+
