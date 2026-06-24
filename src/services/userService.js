@@ -1,4 +1,5 @@
 const Note = require('../models/Note');
+const RefreshToken = require('../models/RefreshToken');
 const User = require('../models/User');
 const {
   BadRequestError,
@@ -62,6 +63,7 @@ const deleteMe = async (userId) => {
   }
 
   const notesResult = await Note.deleteMany({ user: user._id });
+  await RefreshToken.deleteMany({ user: user._id });
   await user.deleteOne();
 
   return {

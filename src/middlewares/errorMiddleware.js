@@ -36,6 +36,17 @@ const handleCastError = () => ({
   },
 });
 
+const handleParseError = (err) => ({
+  statusCode: err.type === 'entity.too.large' ? 413 : 400,
+  body: {
+    status: 'fail',
+    message:
+      err.type === 'entity.too.large'
+        ? 'Request body is too large'
+        : 'Malformed request payload',
+  },
+});
+
 const errorMiddleware = (err, req, res, next) => {
   if (res.headersSent) {
     return next(err);
@@ -60,6 +71,15 @@ const errorMiddleware = (err, req, res, next) => {
 
   if (err.name === 'CastError') {
     const { statusCode, body } = handleCastError(err);
+    return res.status(statusCode).json(body);
+  }
+
+  if (
+    err instanceof SyntaxError ||
+    err.type === 'entity.parse.failed' ||
+    err.type === 'entity.too.large'
+  ) {
+    const { statusCode, body } = handleParseError(err);
     return res.status(statusCode).json(body);
   }
 

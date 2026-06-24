@@ -1,7 +1,7 @@
 # Note-Taking API
 
 This API is built to test backend development concepts across different programming languages.
-It uses JWT Authentication and a layered Clean Architecture with custom exception handling.
+It uses short-lived JWT access tokens, hybrid refresh-token delivery for web and mobile clients, and a layered Clean Architecture with custom exception handling.
 Technologies used in this project include Node.js, Express.js, and MongoDB.
 
 ## Tech Stack
@@ -21,6 +21,9 @@ Technologies used in this project include Node.js, Express.js, and MongoDB.
   <a href="https://www.npmjs.com/package/bcrypt"><img alt="bcrypt" src="https://img.shields.io/badge/bcrypt-v6.0.0-338?style=for-the-badge&logo=npm&logoColor=white"></a>
   <a href="https://www.npmjs.com/package/dotenv"><img alt="dotenv" src="https://img.shields.io/badge/dotenv-v16.6.1-ECD53F?style=for-the-badge&logo=dotenv&logoColor=black"></a>
   <a href="https://www.npmjs.com/package/helmet"><img alt="helmet" src="https://img.shields.io/badge/helmet-v8.2.0-000000?style=for-the-badge&logo=npm&logoColor=white"></a>
+  <a href="https://www.npmjs.com/package/cors"><img alt="cors" src="https://img.shields.io/badge/cors-v2.8.6-000000?style=for-the-badge&logo=npm&logoColor=white"></a>
+  <a href="https://www.npmjs.com/package/cookie-parser"><img alt="cookie-parser" src="https://img.shields.io/badge/cookie--parser-v1.4.7-000000?style=for-the-badge&logo=npm&logoColor=white"></a>
+  <a href="https://www.npmjs.com/package/hpp"><img alt="hpp" src="https://img.shields.io/badge/hpp-v0.2.3-000000?style=for-the-badge&logo=npm&logoColor=white"></a>
   <a href="https://www.npmjs.com/package/express-rate-limit"><img alt="express-rate-limit" src="https://img.shields.io/badge/express--rate--limit-v8.5.2-000000?style=for-the-badge&logo=npm&logoColor=white"></a>
   <a href="https://www.npmjs.com/package/zod"><img alt="zod" src="https://img.shields.io/badge/zod-v4.4.3-3068B7?style=for-the-badge&logo=npm&logoColor=white"></a>
   <a href="https://www.npmjs.com/package/swagger-jsdoc"><img alt="swagger-jsdoc" src="https://img.shields.io/badge/swagger--jsdoc-v6.3.0-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"></a>
@@ -45,10 +48,14 @@ https://note-app-backend-ktxk.onrender.com/api-docs
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| POST | `/api/auth/register` | Register a new user | No |
-| POST | `/api/auth/login` | Login and receive JWT token | No |
+| POST | `/api/auth/register` | Register a new user and receive tokens using web or mobile delivery | No |
+| POST | `/api/auth/login` | Login and receive tokens using web or mobile delivery | No |
+| POST | `/api/auth/refresh` | Rotate the refresh token and receive a new access token | Refresh token |
+| POST | `/api/auth/logout` | Revoke the current refresh token | Refresh token |
 
-Auth requests are rate limited to 5 attempts per 15 minutes for each endpoint.
+`POST /api/auth/logout-all` has been removed. Refresh-token replay detection still revokes all active refresh tokens for the affected user internally.
+
+Auth requests are rate limited to 5 attempts per 15 minutes for each endpoint. All `/api` routes also have a general rate limit.
 
 ### Users
 
@@ -75,6 +82,36 @@ Authorization header format:
 Authorization: Bearer <your_token>
 ```
 
+## Auth Token Delivery
+
+The API supports separate token delivery for web and mobile clients:
+
+- Web clients omit `X-Client-Type`. Responses include `accessToken` in the JSON body and set `refreshToken` as an `httpOnly`, `secure`, `sameSite=strict` cookie.
+- Mobile clients send `X-Client-Type: mobile`. Responses include both `accessToken` and `refreshToken` in the JSON body, and no cookie is set or cleared.
+
+Refresh tokens are opaque random values; only their SHA-256 hashes are stored in MongoDB. Refresh tokens rotate on every `/api/auth/refresh` call and are revoked on `/api/auth/logout`.
+
+### Mobile Client Guidance
+
+- Send `X-Client-Type: mobile` on every auth request that creates, refreshes, or revokes tokens.
+- Store the mobile `refreshToken` in EncryptedSharedPreferences on Android or Keychain on iOS. Never store it in plain SharedPreferences, local logs, or crash reports.
+- Send `refreshToken` in the JSON request body for `POST /api/auth/refresh` and `POST /api/auth/logout`.
+- Keep the access token in memory, such as ViewModel or app state, and do not persist it.
+
+Example mobile refresh request:
+
+```json
+{
+  "refreshToken": "a3f1c2e4b5d6..."
+}
+```
+
+### Swagger UI Notes
+
+- Use `bearerAuth` to paste an access token from `/api/auth/register`, `/api/auth/login`, or `/api/auth/refresh` when testing protected endpoints.
+- Swagger UI cannot directly test the cookie-based web refresh/logout flow because of browser cross-origin cookie limitations.
+- To test refresh or logout in Swagger UI, send `X-Client-Type: mobile` and provide `refreshToken` in the request body.
+
 ## Project Structure
 
 ```text
@@ -83,6 +120,7 @@ note-app-backend
 |-- src
 |   |-- app.js
 |   |-- config
+|   |   |-- env.js
 |   |   |-- db.js
 |   |   `-- swagger.js
 |   |-- controllers
@@ -94,9 +132,11 @@ note-app-backend
 |   |-- middlewares
 |   |   |-- authMiddleware.js
 |   |   |-- errorMiddleware.js
+|   |   |-- validateRequest.js
 |   |   `-- validateAuth.js
 |   |-- models
 |   |   |-- Note.js
+|   |   |-- RefreshToken.js
 |   |   `-- User.js
 |   |-- routes
 |   |   |-- authRoutes.js
@@ -108,6 +148,7 @@ note-app-backend
 |   |   `-- userService.js
 |   `-- utils
 |       |-- catchAsync.js
+|       |-- clientType.js
 |       `-- getBaseUrl.js
 ```
 
@@ -118,9 +159,17 @@ Before running the app, create a `.env` file in the project root:
 ```env
 PORT=5000
 MONGO_URI=mongodb://localhost:27017/note-app-db
-JWT_SECRET=your_jwt_secret_here
+MONGO_DB_NAME=note-app-db
+JWT_ACCESS_SECRET=replace_with_a_strong_access_token_secret
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=30d
+COOKIE_SECURE=true
+CORS_ALLOWED_ORIGINS=https://yourfrontend.com,http://localhost:3000
+BCRYPT_SALT_ROUNDS=12
 API_BASE_URL=https://your-app-name.onrender.com
 ```
+
+`MONGO_DB_NAME` selects the database inside your MongoDB cluster. A cluster is the server infrastructure; a database is the logical app database on that cluster; collections are table-like groups inside that database. This app stores `users`, `notes`, and `refreshtokens` in `note-app-db` by default.
 
 ## Installation
 
@@ -150,12 +199,19 @@ npm run dev
 
 ## Security
 
-- Helmet is enabled before JSON parsing to set safer HTTP response headers.
-- Auth endpoints use rate limiting: 5 register or login attempts per 15 minutes.
-- Zod validates register and login request bodies before they reach the service layer.
+- Helmet is enabled with an explicit JSON API CSP choice.
+- CORS uses an environment-driven origin allow-list with `credentials: true`.
+- Cookies are parsed with `cookie-parser`, JSON bodies are limited to `10kb`, and HTTP parameter pollution is blocked with `hpp`.
+- Auth endpoints use rate limiting: 5 register, login, refresh, or logout attempts per 15 minutes.
+- All `/api` endpoints have a general application rate limit.
+- Zod validates auth, note, user-update, and note-id inputs before they reach the service layer.
+- Notes are limited to 10,000 characters in both Zod and the Mongoose schema.
 - Auth services also enforce string-only `name`, `email`, and `password` values to reduce NoSQL injection risk.
-- Passwords are hashed with bcrypt before storage.
-- Protected routes require a Bearer JWT.
+- Passwords require at least 8 characters with uppercase, lowercase, and digit characters.
+- Passwords are hashed with bcrypt before storage; the cost factor is configurable with `BCRYPT_SALT_ROUNDS`.
+- Failed logins are tracked per account and temporarily lock the account after repeated failures.
+- Protected routes require a Bearer access token signed with `JWT_ACCESS_SECRET` using HS256.
+- Refresh tokens rotate on every refresh, are revoked on logout, and replay of a revoked refresh token revokes every active refresh token for that user.
 
 ## Error Responses
 

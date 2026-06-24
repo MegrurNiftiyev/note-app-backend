@@ -20,7 +20,9 @@ const authMiddleware = catchAsync(async (req, res, next) => {
   let decoded;
 
   try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET);
+    decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET, {
+      algorithms: ['HS256'],
+    });
   } catch (error) {
     throw new UnauthorizedError('Invalid or expired token');
   }

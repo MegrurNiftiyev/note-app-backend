@@ -2,6 +2,7 @@ const express = require('express');
 
 const authMiddleware = require('../middlewares/authMiddleware');
 const userController = require('../controllers/userController');
+const { validateUserUpdate } = require('../middlewares/validateRequest');
 
 const router = express.Router();
 
@@ -138,7 +139,7 @@ router.use(authMiddleware);
 router
   .route('/me')
   .get(userController.getMe)
-  .patch(userController.updateMe)
+  .patch(validateUserUpdate, userController.updateMe)
   .delete(userController.deleteMe);
 
 module.exports = router;

@@ -6,6 +6,7 @@ const noteSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Note text is required'],
       trim: true,
+      maxlength: [10000, 'Note text must be at most 10000 characters long'],
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,

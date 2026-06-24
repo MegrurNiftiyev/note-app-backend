@@ -5,7 +5,12 @@ const { BadRequestError } = require('../errors/customErrors');
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters long'),
   email: z.string().email('Email must be a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters long'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters long')
+    .regex(/[a-z]/, 'Password must include a lowercase letter')
+    .regex(/[A-Z]/, 'Password must include an uppercase letter')
+    .regex(/[0-9]/, 'Password must include a digit'),
 });
 
 const loginSchema = z.object({

@@ -45,6 +45,7 @@ const swaggerDefinition = {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
+        description: 'Paste your access token here. Obtained from /register, /login, or /refresh.',
       },
     },
     schemas: {
@@ -66,7 +67,8 @@ const swaggerDefinition = {
             type: 'string',
             format: 'password',
             minLength: 8,
-            example: 'secure-password',
+            pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$',
+            example: 'SecurePass1',
           },
         },
       },
@@ -91,6 +93,7 @@ const swaggerDefinition = {
         properties: {
           name: {
             type: 'string',
+            minLength: 2,
             example: 'Ada Lovelace',
           },
           email: {
@@ -106,6 +109,8 @@ const swaggerDefinition = {
         properties: {
           text: {
             type: 'string',
+            minLength: 1,
+            maxLength: 10000,
             example: 'My first note',
           },
         },
@@ -129,6 +134,44 @@ const swaggerDefinition = {
           createdAt: {
             type: 'string',
             format: 'date-time',
+          },
+        },
+      },
+      WebAuthResponse: {
+        type: 'object',
+        properties: {
+          status: { type: 'string', example: 'success' },
+          data: {
+            type: 'object',
+            properties: {
+              accessToken: {
+                type: 'string',
+                example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+              },
+              user: { $ref: '#/components/schemas/User' },
+            },
+          },
+        },
+      },
+      MobileAuthResponse: {
+        type: 'object',
+        properties: {
+          status: { type: 'string', example: 'success' },
+          data: {
+            type: 'object',
+            properties: {
+              accessToken: {
+                type: 'string',
+                example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+              },
+              refreshToken: {
+                type: 'string',
+                description:
+                  'Mobile clients only. Web clients do not receive this field in the response body; the refresh token is sent as an HttpOnly cookie.',
+                example: 'a3f1c2e4b5d6...',
+              },
+              user: { $ref: '#/components/schemas/User' },
+            },
           },
         },
       },
@@ -192,4 +235,27 @@ const options = {
   apis: ['./src/routes/*.js'],
 };
 
-module.exports = swaggerJsdoc(options);
+const swaggerSpec = swaggerJsdoc(options);
+
+Object.values(swaggerSpec.paths || {}).forEach((pathItem) => {
+  Object.values(pathItem).forEach((operation) => {
+    if (!operation.responses) {
+      operation.responses = {};
+    }
+
+    if (!operation.responses['500']) {
+      operation.responses['500'] = {
+        description: 'Internal server error.',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ServerErrorResponse',
+            },
+          },
+        },
+      };
+    }
+  });
+});
+
+module.exports = swaggerSpec;

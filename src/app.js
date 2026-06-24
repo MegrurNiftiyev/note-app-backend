@@ -1,15 +1,33 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const helmet = require('helmet');
+const hpp = require('hpp');
+const rateLimit = require('express-rate-limit');
 const swaggerUi = require('swagger-ui-express');
 
 const swaggerSpec = require('./config/swagger');
-const { NotFoundError } = require('./errors/customErrors');
+const { BadRequestError, NotFoundError } = require('./errors/customErrors');
 const authRoutes = require('./routes/authRoutes');
 const noteRoutes = require('./routes/noteRoutes');
 const userRoutes = require('./routes/userRoutes');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 
 const app = express();
+const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 'fail',
+    message: 'Too many requests, try again later',
+  },
+});
 const swaggerOptions = {
   swaggerOptions: {
     defaultModelsExpandDepth: 0,
@@ -43,8 +61,25 @@ const swaggerOptions = {
   },
 };
 
-app.use(helmet());
-app.use(express.json());
+app.set('trust proxy', 1);
+
+// This is a JSON API, so Helmet's HTML-focused default CSP is disabled intentionally.
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new BadRequestError('CORS origin is not allowed'));
+    },
+    credentials: true,
+  })
+);
+app.use(cookieParser());
+app.use(express.json({ limit: '10kb' }));
+app.use(hpp());
 
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -55,6 +90,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
 
+app.use('/api', apiLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notes', noteRoutes);

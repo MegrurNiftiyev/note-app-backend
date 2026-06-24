@@ -2,6 +2,10 @@ const express = require('express');
 
 const authMiddleware = require('../middlewares/authMiddleware');
 const noteController = require('../controllers/noteController');
+const {
+  validateNote,
+  validateNoteId,
+} = require('../middlewares/validateRequest');
 
 const router = express.Router();
 
@@ -115,7 +119,7 @@ router.use(authMiddleware);
  */
 router
   .route('/')
-  .post(noteController.createNote)
+  .post(validateNote, noteController.createNote)
   .get(noteController.getNotes)
   .delete(noteController.deleteAllNotes);
 
@@ -277,8 +281,8 @@ router
  */
 router
   .route('/:id')
-  .get(noteController.getNote)
-  .patch(noteController.updateNote)
-  .delete(noteController.deleteNote);
+  .get(validateNoteId, noteController.getNote)
+  .patch(validateNoteId, validateNote, noteController.updateNote)
+  .delete(validateNoteId, noteController.deleteNote);
 
 module.exports = router;
