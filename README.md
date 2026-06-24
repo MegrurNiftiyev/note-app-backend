@@ -89,6 +89,43 @@ The API supports separate token delivery for web and mobile clients:
 - Web clients omit `X-Client-Type`. Responses include `accessToken` in the JSON body and set `refreshToken` as an `httpOnly`, `secure`, `sameSite=strict` cookie.
 - Mobile clients send `X-Client-Type: mobile`. Responses include both `accessToken` and `refreshToken` in the JSON body, and no cookie is set or cleared.
 
+`X-Client-Type` only changes how refresh tokens are delivered at the API response level. Web responses use the web shape (`accessToken` + `user` in JSON, refresh token in cookie). Mobile responses use the mobile shape (`accessToken` + `refreshToken` + `user` in JSON). In Swagger UI, choose `mobile` in the `X-Client-Type` header field to test the mobile body flow; choose `web` or leave it unset for the cookie-based web flow.
+
+Web response body:
+
+```json
+{
+  "status": "success",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "_id": "665f2a797a6ef0cb8d3a7d1a",
+      "name": "Ada Lovelace",
+      "email": "ada@example.com",
+      "createdAt": "2026-06-24T11:19:08.377Z"
+    }
+  }
+}
+```
+
+Mobile response body:
+
+```json
+{
+  "status": "success",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "a3f1c2e4b5d6...",
+    "user": {
+      "_id": "665f2a797a6ef0cb8d3a7d1a",
+      "name": "Ada Lovelace",
+      "email": "ada@example.com",
+      "createdAt": "2026-06-24T11:19:08.377Z"
+    }
+  }
+}
+```
+
 Refresh tokens are opaque random values; only their SHA-256 hashes are stored in MongoDB. Refresh tokens rotate on every `/api/auth/refresh` call and are revoked on `/api/auth/logout`.
 
 ### Mobile Client Guidance
