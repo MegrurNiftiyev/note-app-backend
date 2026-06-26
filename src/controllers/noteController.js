@@ -3,7 +3,8 @@ const catchAsync = require('../utils/catchAsync');
 
 const createNote = catchAsync(async (req, res) => {
   const note = await noteService.createNote({
-    text: req.body.text,
+    title: req.body.title,
+    content: req.body.content,
     userId: req.user._id,
   });
 
@@ -39,7 +40,8 @@ const updateNote = catchAsync(async (req, res) => {
   const note = await noteService.updateNoteById({
     noteId: req.params.id,
     userId: req.user._id,
-    text: req.body.text,
+    title: req.body.title,
+    content: req.body.content,
   });
 
   res.status(200).json({

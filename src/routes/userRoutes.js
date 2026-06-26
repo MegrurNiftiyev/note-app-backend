@@ -98,14 +98,14 @@ router.use(authMiddleware);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *   delete:
- *     summary: Delete the authenticated user's account and all related notes.
+ *     summary: Delete the authenticated user's account and all related items.
  *     tags:
  *       - Users
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: User and related notes deleted successfully.
+ *         description: User and related items deleted successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -123,6 +123,9 @@ router.use(authMiddleware);
  *                     deletedNotesCount:
  *                       type: integer
  *                       example: 4
+ *                     deletedTodosCount:
+ *                       type: integer
+ *                       example: 6
  *       401:
  *         description: Missing, invalid, or expired token.
  *         content:

@@ -38,6 +38,10 @@ const swaggerDefinition = {
       name: 'Notes',
       description: 'Authenticated note management endpoints',
     },
+    {
+      name: 'Todos',
+      description: 'Authenticated todo management endpoints',
+    },
   ],
   components: {
     securitySchemes: {
@@ -105,15 +109,75 @@ const swaggerDefinition = {
       },
       NoteRequest: {
         type: 'object',
-        required: ['text'],
+        required: ['title'],
         properties: {
-          text: {
+          title: {
             type: 'string',
             minLength: 1,
+            maxLength: 200,
+            example: 'Project ideas',
+          },
+          content: {
+            type: 'string',
             maxLength: 10000,
-            example: 'My first note',
+            example: 'Build a focused note and todo API.',
           },
         },
+      },
+      NoteUpdateRequest: {
+        type: 'object',
+        properties: {
+          title: {
+            type: 'string',
+            minLength: 1,
+            maxLength: 200,
+            example: 'Updated project ideas',
+          },
+          content: {
+            type: 'string',
+            maxLength: 10000,
+            example: 'Ship the note refactor and todo endpoints.',
+          },
+        },
+        anyOf: [
+          { required: ['title'] },
+          { required: ['content'] },
+        ],
+      },
+      TodoRequest: {
+        type: 'object',
+        required: ['description'],
+        properties: {
+          description: {
+            type: 'string',
+            minLength: 1,
+            maxLength: 500,
+            example: 'Review API documentation',
+          },
+          isCompleted: {
+            type: 'boolean',
+            example: false,
+          },
+        },
+      },
+      TodoUpdateRequest: {
+        type: 'object',
+        properties: {
+          description: {
+            type: 'string',
+            minLength: 1,
+            maxLength: 500,
+            example: 'Review updated API documentation',
+          },
+          isCompleted: {
+            type: 'boolean',
+            example: true,
+          },
+        },
+        anyOf: [
+          { required: ['description'] },
+          { required: ['isCompleted'] },
+        ],
       },
       User: {
         type: 'object',
@@ -182,13 +246,38 @@ const swaggerDefinition = {
             type: 'string',
             example: '665f2af07a6ef0cb8d3a7d1d',
           },
-          text: {
+          title: {
             type: 'string',
-            example: 'My first note',
+            example: 'Project ideas',
           },
-          user: {
+          content: {
             type: 'string',
-            example: '665f2a797a6ef0cb8d3a7d1a',
+            example: 'Build a focused note and todo API.',
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+          },
+        },
+      },
+      Todo: {
+        type: 'object',
+        properties: {
+          _id: {
+            type: 'string',
+            example: '665f2af07a6ef0cb8d3a7d1e',
+          },
+          description: {
+            type: 'string',
+            example: 'Review API documentation',
+          },
+          isCompleted: {
+            type: 'boolean',
+            example: false,
           },
           createdAt: {
             type: 'string',

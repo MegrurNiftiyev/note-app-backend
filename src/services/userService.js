@@ -1,5 +1,6 @@
 const Note = require('../models/Note');
 const RefreshToken = require('../models/RefreshToken');
+const Todo = require('../models/Todo');
 const User = require('../models/User');
 const {
   BadRequestError,
@@ -63,12 +64,14 @@ const deleteMe = async (userId) => {
   }
 
   const notesResult = await Note.deleteMany({ user: user._id });
+  const todosResult = await Todo.deleteMany({ user: user._id });
   await RefreshToken.deleteMany({ user: user._id });
   await user.deleteOne();
 
   return {
     deletedUserId: user._id,
     deletedNotesCount: notesResult.deletedCount,
+    deletedTodosCount: todosResult.deletedCount,
   };
 };
 

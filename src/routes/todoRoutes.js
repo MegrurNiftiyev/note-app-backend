@@ -1,11 +1,11 @@
 const express = require('express');
 
 const authMiddleware = require('../middlewares/authMiddleware');
-const noteController = require('../controllers/noteController');
+const todoController = require('../controllers/todoController');
 const {
-  validateNote,
-  validateNoteUpdate,
-  validateNoteId,
+  validateTodo,
+  validateTodoUpdate,
+  validateTodoId,
 } = require('../middlewares/validateRequest');
 
 const router = express.Router();
@@ -14,11 +14,11 @@ router.use(authMiddleware);
 
 /**
  * @openapi
- * /api/notes:
+ * /api/todos:
  *   post:
- *     summary: Create a note for the authenticated user.
+ *     summary: Create a todo for the authenticated user.
  *     tags:
- *       - Notes
+ *       - Todos
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -26,10 +26,18 @@ router.use(authMiddleware);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/NoteRequest'
+ *             type: object
+ *             required:
+ *               - description
+ *             properties:
+ *               description:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 500
+ *                 example: Review API documentation
  *     responses:
  *       201:
- *         description: Note created successfully.
+ *         description: Todo created successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -41,8 +49,8 @@ router.use(authMiddleware);
  *                 data:
  *                   type: object
  *                   properties:
- *                     note:
- *                       $ref: '#/components/schemas/Note'
+ *                     todo:
+ *                       $ref: '#/components/schemas/Todo'
  *       400:
  *         description: Validation error or invalid request body.
  *         content:
@@ -56,14 +64,14 @@ router.use(authMiddleware);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *   get:
- *     summary: Get all notes for the authenticated user.
+ *     summary: Get all todos for the authenticated user.
  *     tags:
- *       - Notes
+ *       - Todos
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Notes retrieved successfully.
+ *         description: Todos retrieved successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -78,10 +86,10 @@ router.use(authMiddleware);
  *                 data:
  *                   type: object
  *                   properties:
- *                     notes:
+ *                     todos:
  *                       type: array
  *                       items:
- *                         $ref: '#/components/schemas/Note'
+ *                         $ref: '#/components/schemas/Todo'
  *       401:
  *         description: Missing, invalid, or expired token.
  *         content:
@@ -89,14 +97,14 @@ router.use(authMiddleware);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *   delete:
- *     summary: Delete all notes for the authenticated user.
+ *     summary: Delete all todos for the authenticated user.
  *     tags:
- *       - Notes
+ *       - Todos
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Notes deleted successfully.
+ *         description: Todos deleted successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -120,17 +128,17 @@ router.use(authMiddleware);
  */
 router
   .route('/')
-  .post(validateNote, noteController.createNote)
-  .get(noteController.getNotes)
-  .delete(noteController.deleteAllNotes);
+  .post(validateTodo, todoController.createTodo)
+  .get(todoController.getTodos)
+  .delete(todoController.deleteAllTodos);
 
 /**
  * @openapi
- * /api/notes/{id}:
+ * /api/todos/{id}:
  *   get:
- *     summary: Get one note by ID.
+ *     summary: Get one todo by ID.
  *     tags:
- *       - Notes
+ *       - Todos
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -139,10 +147,10 @@ router
  *         required: true
  *         schema:
  *           type: string
- *         description: Note ID.
+ *         description: Todo ID.
  *     responses:
  *       200:
- *         description: Note retrieved successfully.
+ *         description: Todo retrieved successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -154,10 +162,10 @@ router
  *                 data:
  *                   type: object
  *                   properties:
- *                     note:
- *                       $ref: '#/components/schemas/Note'
+ *                     todo:
+ *                       $ref: '#/components/schemas/Todo'
  *       400:
- *         description: Invalid note ID.
+ *         description: Invalid todo ID.
  *         content:
  *           application/json:
  *             schema:
@@ -169,15 +177,15 @@ router
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
- *         description: Note not found.
+ *         description: Todo not found.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *   patch:
- *     summary: Update one note by ID.
+ *     summary: Update one todo by ID.
  *     tags:
- *       - Notes
+ *       - Todos
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -186,16 +194,16 @@ router
  *         required: true
  *         schema:
  *           type: string
- *         description: Note ID.
+ *         description: Todo ID.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/NoteUpdateRequest'
+ *             $ref: '#/components/schemas/TodoUpdateRequest'
  *     responses:
  *       200:
- *         description: Note updated successfully.
+ *         description: Todo updated successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -207,10 +215,10 @@ router
  *                 data:
  *                   type: object
  *                   properties:
- *                     note:
- *                       $ref: '#/components/schemas/Note'
+ *                     todo:
+ *                       $ref: '#/components/schemas/Todo'
  *       400:
- *         description: Invalid note ID or invalid request body.
+ *         description: Invalid todo ID or invalid request body.
  *         content:
  *           application/json:
  *             schema:
@@ -222,15 +230,15 @@ router
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
- *         description: Note not found.
+ *         description: Todo not found.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *   delete:
- *     summary: Delete one note by ID.
+ *     summary: Delete one todo by ID.
  *     tags:
- *       - Notes
+ *       - Todos
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -239,12 +247,12 @@ router
  *         required: true
  *         schema:
  *           type: string
- *         description: Note ID.
+ *         description: Todo ID.
  *     responses:
  *       204:
- *         description: Note deleted successfully.
+ *         description: Todo deleted successfully.
  *       400:
- *         description: Invalid note ID.
+ *         description: Invalid todo ID.
  *         content:
  *           application/json:
  *             schema:
@@ -256,7 +264,7 @@ router
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
- *         description: Note not found.
+ *         description: Todo not found.
  *         content:
  *           application/json:
  *             schema:
@@ -264,8 +272,8 @@ router
  */
 router
   .route('/:id')
-  .get(validateNoteId, noteController.getNote)
-  .patch(validateNoteId, validateNoteUpdate, noteController.updateNote)
-  .delete(validateNoteId, noteController.deleteNote);
+  .get(validateTodoId, todoController.getTodo)
+  .patch(validateTodoId, validateTodoUpdate, todoController.updateTodo)
+  .delete(validateTodoId, todoController.deleteTodo);
 
 module.exports = router;

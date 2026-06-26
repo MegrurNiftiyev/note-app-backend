@@ -63,7 +63,7 @@ Auth requests are rate limited to 5 attempts per 15 minutes for each endpoint. A
 |--------|----------|-------------|------|
 | GET | `/api/users/me` | Get your profile | Yes |
 | PATCH | `/api/users/me` | Update your name or email | Yes |
-| DELETE | `/api/users/me` | Delete your account and all related notes | Yes |
+| DELETE | `/api/users/me` | Delete your account and all related notes and todos | Yes |
 
 ### Notes
 
@@ -75,6 +75,34 @@ Auth requests are rate limited to 5 attempts per 15 minutes for each endpoint. A
 | PATCH | `/api/notes/:id` | Update a note | Yes |
 | DELETE | `/api/notes/:id` | Delete a specific note | Yes |
 | DELETE | `/api/notes` | Delete all your notes | Yes |
+
+Notes use `title` and optional `content` fields:
+
+```json
+{
+  "title": "Project ideas",
+  "content": "Build a focused note and todo API."
+}
+```
+
+### Todos
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/todos` | Get all your todos | Yes |
+| GET | `/api/todos/:id` | Get one todo by ID | Yes |
+| POST | `/api/todos` | Create a new todo | Yes |
+| PATCH | `/api/todos/:id` | Update a todo | Yes |
+| DELETE | `/api/todos` | Delete all your todos | Yes |
+| DELETE | `/api/todos/:id` | Delete a specific todo | Yes |
+
+Todo creation accepts only `description`. `isCompleted` can be changed only with `PATCH /api/todos/:id`.
+
+```json
+{
+  "description": "Review API documentation"
+}
+```
 
 Authorization header format:
 
@@ -163,6 +191,7 @@ note-app-backend
 |   |-- controllers
 |   |   |-- authController.js
 |   |   |-- noteController.js
+|   |   |-- todoController.js
 |   |   `-- userController.js
 |   |-- errors
 |   |   `-- customErrors.js
@@ -174,14 +203,17 @@ note-app-backend
 |   |-- models
 |   |   |-- Note.js
 |   |   |-- RefreshToken.js
+|   |   |-- Todo.js
 |   |   `-- User.js
 |   |-- routes
 |   |   |-- authRoutes.js
 |   |   |-- noteRoutes.js
+|   |   |-- todoRoutes.js
 |   |   `-- userRoutes.js
 |   |-- services
 |   |   |-- authService.js
 |   |   |-- noteService.js
+|   |   |-- todoService.js
 |   |   `-- userService.js
 |   `-- utils
 |       |-- catchAsync.js
@@ -206,7 +238,7 @@ BCRYPT_SALT_ROUNDS=12
 API_BASE_URL=https://your-app-name.onrender.com
 ```
 
-`MONGO_DB_NAME` selects the database inside your MongoDB cluster. A cluster is the server infrastructure; a database is the logical app database on that cluster; collections are table-like groups inside that database. This app stores `users`, `notes`, and `refreshtokens` in `note-app-db` by default.
+`MONGO_DB_NAME` selects the database inside your MongoDB cluster. A cluster is the server infrastructure; a database is the logical app database on that cluster; collections are table-like groups inside that database. This app stores `users`, `notes`, `todos`, and `refreshtokens` in `note-app-db` by default.
 
 ## Installation
 
@@ -241,8 +273,8 @@ npm run dev
 - Cookies are parsed with `cookie-parser`, JSON bodies are limited to `10kb`, and HTTP parameter pollution is blocked with `hpp`.
 - Auth endpoints use rate limiting: 5 register, login, refresh, or logout attempts per 15 minutes.
 - All `/api` endpoints have a general application rate limit.
-- Zod validates auth, note, user-update, and note-id inputs before they reach the service layer.
-- Notes are limited to 10,000 characters in both Zod and the Mongoose schema.
+- Zod validates auth, note, todo, user-update, note-id, and todo-id inputs before they reach the service layer.
+- Note titles are limited to 200 characters, note content is limited to 10,000 characters, and todo descriptions are limited to 500 characters in both Zod and the Mongoose schema.
 - Auth services also enforce string-only `name`, `email`, and `password` values to reduce NoSQL injection risk.
 - Passwords require at least 8 characters with uppercase, lowercase, and digit characters.
 - Passwords are hashed with bcrypt before storage; the cost factor is configurable with `BCRYPT_SALT_ROUNDS`.
@@ -265,7 +297,6 @@ All errors return a consistent JSON format:
 |--------|---------|
 | 400 | Bad request / validation error |
 | 401 | Unauthorized, missing or invalid token |
-| 403 | Forbidden, not your resource |
 | 404 | Not found |
 | 409 | Conflict, for example email already exists |
 | 429 | Too many attempts, try again later |
@@ -279,7 +310,6 @@ The API uses a custom operational error hierarchy:
 |-------|--------|
 | `BadRequestError` | 400 |
 | `UnauthorizedError` | 401 |
-| `ForbiddenError` | 403 |
 | `NotFoundError` | 404 |
 | `ConflictError` | 409 |
 

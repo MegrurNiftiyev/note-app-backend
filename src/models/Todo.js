@@ -1,17 +1,16 @@
 const mongoose = require('mongoose');
 
-const noteSchema = new mongoose.Schema(
+const todoSchema = new mongoose.Schema(
   {
-    title: {
+    description: {
       type: String,
-      required: [true, 'Note title is required'],
+      required: [true, 'Todo description is required'],
       trim: true,
-      maxlength: [200, 'Note title must be at most 200 characters long'],
+      maxlength: [500, 'Todo description must be at most 500 characters long'],
     },
-    content: {
-      type: String,
-      trim: true,
-      maxlength: [10000, 'Note content must be at most 10000 characters long'],
+    isCompleted: {
+      type: Boolean,
+      default: false,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -30,4 +29,4 @@ const noteSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('Note', noteSchema);
+module.exports = mongoose.model('Todo', todoSchema);

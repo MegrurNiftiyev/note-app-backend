@@ -1,12 +1,11 @@
 const Note = require('../models/Note');
 const {
   BadRequestError,
-  ForbiddenError,
   NotFoundError,
 } = require('../errors/customErrors');
 
-const createNote = async ({ text, userId }) => {
-  return Note.create({ text, user: userId });
+const createNote = async ({ title, content, userId }) => {
+  return Note.create({ title, content, user: userId });
 };
 
 const getNotesByUser = async (userId) => {
@@ -14,49 +13,44 @@ const getNotesByUser = async (userId) => {
 };
 
 const getNoteById = async ({ noteId, userId }) => {
-  const note = await Note.findById(noteId);
+  const note = await Note.findOne({ _id: noteId, user: userId });
 
   if (!note) {
     throw new NotFoundError('Note not found');
-  }
-
-  if (!note.user.equals(userId)) {
-    throw new ForbiddenError('You are not allowed to access this note');
   }
 
   return note;
 };
 
-const updateNoteById = async ({ noteId, userId, text }) => {
-  if (text === undefined) {
-    throw new BadRequestError('Note text is required');
+const updateNoteById = async ({ noteId, userId, title, content }) => {
+  if (title === undefined && content === undefined) {
+    throw new BadRequestError('Note title or content is required');
   }
 
-  const note = await Note.findById(noteId);
+  const note = await Note.findOne({ _id: noteId, user: userId });
 
   if (!note) {
     throw new NotFoundError('Note not found');
   }
 
-  if (!note.user.equals(userId)) {
-    throw new ForbiddenError('You are not allowed to update this note');
+  if (title !== undefined) {
+    note.title = title;
   }
 
-  note.text = text;
+  if (content !== undefined) {
+    note.content = content;
+  }
+
   await note.save();
 
   return note;
 };
 
 const deleteNoteById = async ({ noteId, userId }) => {
-  const note = await Note.findById(noteId);
+  const note = await Note.findOne({ _id: noteId, user: userId });
 
   if (!note) {
     throw new NotFoundError('Note not found');
-  }
-
-  if (!note.user.equals(userId)) {
-    throw new ForbiddenError('You are not allowed to delete this note');
   }
 
   await note.deleteOne();

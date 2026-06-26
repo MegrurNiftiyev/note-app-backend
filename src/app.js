@@ -10,6 +10,7 @@ const swaggerSpec = require('./config/swagger');
 const { BadRequestError, NotFoundError } = require('./errors/customErrors');
 const authRoutes = require('./routes/authRoutes');
 const noteRoutes = require('./routes/noteRoutes');
+const todoRoutes = require('./routes/todoRoutes');
 const userRoutes = require('./routes/userRoutes');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 
@@ -42,8 +43,9 @@ const swaggerOptions = {
 
       const tagA = operationA.getIn(['operation', 'tags', 0]);
       const tagB = operationB.getIn(['operation', 'tags', 0]);
+      const sortedTags = ['Notes', 'Todos'];
 
-      if (tagA !== 'Notes' || tagB !== 'Notes') {
+      if (tagA !== tagB || !sortedTags.includes(tagA)) {
         return 0;
       }
 
@@ -94,6 +96,7 @@ app.use('/api', apiLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notes', noteRoutes);
+app.use('/api/todos', todoRoutes);
 
 app.use((req, res, next) => {
   next(new NotFoundError(`Route ${req.originalUrl} not found`));

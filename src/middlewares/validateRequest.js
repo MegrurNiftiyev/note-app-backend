@@ -49,16 +49,80 @@ const validateRefreshTokenBody = (req, res, next) => {
 
 const noteSchema = z
   .object({
-    text: z
+    title: z
       .string({
-        required_error: 'Note text is required',
-        invalid_type_error: 'Note text must be a string',
+        required_error: 'Note title is required',
+        invalid_type_error: 'Note title must be a string',
       })
       .trim()
-      .min(1, 'Note text is required')
-      .max(10000, 'Note text must be at most 10000 characters long'),
+      .min(1, 'Note title is required')
+      .max(200, 'Note title must be at most 200 characters long'),
+    content: z
+      .string({
+        invalid_type_error: 'Note content must be a string',
+      })
+      .trim()
+      .max(10000, 'Note content must be at most 10000 characters long')
+      .optional(),
   })
   .strict();
+
+const noteUpdateSchema = z
+  .object({
+    title: z
+      .string({
+        invalid_type_error: 'Note title must be a string',
+      })
+      .trim()
+      .min(1, 'Note title is required')
+      .max(200, 'Note title must be at most 200 characters long')
+      .optional(),
+    content: z
+      .string({
+        invalid_type_error: 'Note content must be a string',
+      })
+      .trim()
+      .max(10000, 'Note content must be at most 10000 characters long')
+      .optional(),
+  })
+  .strict()
+  .refine((data) => data.title !== undefined || data.content !== undefined, {
+    message: 'Note title or content is required',
+  });
+
+const todoSchema = z
+  .object({
+    description: z
+      .string({
+        required_error: 'Todo description is required',
+        invalid_type_error: 'Todo description must be a string',
+      })
+      .trim()
+      .min(1, 'Todo description is required')
+      .max(500, 'Todo description must be at most 500 characters long'),
+  })
+  .strict();
+
+const todoUpdateSchema = z
+  .object({
+    description: z
+      .string({
+        invalid_type_error: 'Todo description must be a string',
+      })
+      .trim()
+      .min(1, 'Todo description is required')
+      .max(500, 'Todo description must be at most 500 characters long')
+      .optional(),
+    isCompleted: z
+      .boolean({
+        invalid_type_error: 'Todo completion status must be a boolean',
+      })
+      .optional(),
+  })
+  .strict()
+  .refine((data) => data.description !== undefined || data.isCompleted !== undefined, {
+    message: 'Todo description or completion status is required',
+  });
 
 const userUpdateSchema = z
   .object({
@@ -88,9 +152,19 @@ const noteIdSchema = z.object({
   }),
 });
 
+const todoIdSchema = z.object({
+  id: z.string().refine((value) => mongoose.Types.ObjectId.isValid(value), {
+    message: 'Invalid todo ID',
+  }),
+});
+
 module.exports = {
   validateNote: validateBody(noteSchema),
+  validateNoteUpdate: validateBody(noteUpdateSchema),
   validateNoteId: validateParams(noteIdSchema),
   validateRefreshTokenBody,
+  validateTodo: validateBody(todoSchema),
+  validateTodoUpdate: validateBody(todoUpdateSchema),
+  validateTodoId: validateParams(todoIdSchema),
   validateUserUpdate: validateBody(userUpdateSchema),
 };
